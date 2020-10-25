@@ -6,7 +6,10 @@ const bodyParser = require('body-parser');
 
 //the database
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/todolistDB', {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect('mongodb://localhost:27017/todolistDB', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
 
 //make a connection to database
 const db = mongoose.connection;
@@ -43,14 +46,14 @@ const item3 = new Item({
 const defaultItems = [item1, item2, item3];
 
 //save those data to database
-Item.insertMany(defaultItems, (err) => {
-  if(err){
-    console.log(err);
-  }
-  else{
-    console.log("Saved!");
-  }
-});
+// Item.insertMany(defaultItems, (err) => {
+//   if(err){
+//     console.log(err);
+//   }
+//   else{
+//     console.log("Saved!");
+//   }
+// });
 
 
 let todo = ["Cuci baju", "Cuci mobil", "ngewe"];
@@ -68,7 +71,7 @@ app.use(bodyParser.urlencoded({
 //tell express serever to use static file called "public" or whatever
 app.use(express.static('public'));
 
-
+//handling get request in root dir
 app.get('/', (req, res) => {
   let today = new Date();
   currentDay = today.getDay();
@@ -79,10 +82,17 @@ app.get('/', (req, res) => {
   }
   let day = today.toLocaleDateString('id-ID', options);
 
-  res.render('list', {
-    title: 'ToDo List', todo: todo
+  //find documents
+  Item.find({}, (err, results) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.render('list', {
+        title: 'ToDo List',
+        todo: results
+      });
+    }
   });
-
 });
 
 app.post('/', (req, res) => {
@@ -102,7 +112,8 @@ app.post('/', (req, res) => {
 
 app.get('/work', (req, res) => {
   res.render('list', {
-    title: 'Work List', todo: workList
+    title: 'Work List',
+    todo: workList
   });
 })
 
