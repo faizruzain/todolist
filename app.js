@@ -79,7 +79,7 @@ app.get('/', (req, res) => {
           console.log("Saved!");
         }
       });
-      res.redirect('/');  
+      res.redirect('/');
     }
     else{
       res.render('list', {
@@ -92,17 +92,21 @@ app.get('/', (req, res) => {
 
 //handling post request in root dir
 app.post('/', (req, res) => {
-  console.log(req.body);
 
-  if (req.body.list === 'ToDo') {
-    let newItem = req.body.myInput;
-    todo.push(newItem);
-    res.redirect('/');
-  } else {
-    let newItem = req.body.myInput;
-    workList.push(newItem);
-    res.redirect('/work');
-  }
+  const item = new Item({
+    name: req.body.myInput
+  });
+
+  item.save((err)=>{
+    if(err){
+      console.log(err);
+    }
+    else{
+      console.log("Saved!");
+    }
+  });
+  res.redirect('/');
+
 
 });
 
