@@ -27,8 +27,18 @@ const itemsSchema = new mongoose.Schema({
 
 });
 
+const worksSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  }
+
+});
+
 //compile schema to model
 const Item = mongoose.model('Item', itemsSchema);
+
+const Work = mongoose.model('Work', worksSchema);
 
 //create some data to save in database
 const item1 = new Item({
@@ -72,16 +82,14 @@ app.get('/', (req, res) => {
     if (results.length === 0) {
       //save those data to database
       Item.insertMany(defaultItems, (err) => {
-        if(err){
+        if (err) {
           console.log(err);
-        }
-        else{
+        } else {
           console.log("Saved!");
         }
       });
       res.redirect('/');
-    }
-    else{
+    } else {
       res.render('list', {
         title: 'ToDo List',
         todo: results
@@ -92,41 +100,50 @@ app.get('/', (req, res) => {
 
 //handling post request in root dir
 app.post('/', (req, res) => {
+  console.log(req.body.list);
+  if (req.body.list === 'ToDo') {
+    const item = new Item({
+      name: req.body.myInput
+    });
 
-  const item = new Item({
-    name: req.body.myInput
-  });
+    item.save((err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Saved!");
+      }
+    });
+    res.redirect('/');
+  }
+  else{
+    const work = new Work({
+      name: req.body.myInput
+    });
 
-  item.save((err)=>{
-    if(err){
-      console.log(err);
-    }
-    else{
-      console.log("Saved!");
-    }
-  });
-  res.redirect('/');
-
-
+    work.save((err) => {
+      if(err){
+        console.log(err);
+      }
+      else{
+        console.log('Saved!');
+      }
+    });
+    res.redirect('/work');
+  }
 });
 
+//handling get request at work dir
 app.get('/work', (req, res) => {
-  res.render('list', {
-    title: 'Work List',
-    todo: workList
+
+  Work.find({}, (err, results) => {
+    res.render('list', {
+      title: 'Work List',
+      todo: results
+    });
   });
-})
+});
 
-// app.post('/work', (req, res) => {
-//   let newItem = req.body.myInput;
-//   workList.push(newItem);
-//   res.redirect('/work');
-// })
-
-
-
-
-
+//listening port
 app.listen(process.env.PORT || port, () => {
   console.log('Server is running on port ' + port);
 });
