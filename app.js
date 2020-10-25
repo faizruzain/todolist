@@ -45,21 +45,6 @@ const item3 = new Item({
 
 const defaultItems = [item1, item2, item3];
 
-//save those data to database
-// Item.insertMany(defaultItems, (err) => {
-//   if(err){
-//     console.log(err);
-//   }
-//   else{
-//     console.log("Saved!");
-//   }
-// });
-
-
-let todo = ["Cuci baju", "Cuci mobil", "ngewe"];
-
-let workList = ["berak"];
-
 //tell our app to use EJS
 app.set('view engine', 'ejs');
 
@@ -84,9 +69,19 @@ app.get('/', (req, res) => {
 
   //find documents
   Item.find({}, (err, results) => {
-    if (err) {
-      console.log(err);
-    } else {
+    if (results.length === 0) {
+      //save those data to database
+      Item.insertMany(defaultItems, (err) => {
+        if(err){
+          console.log(err);
+        }
+        else{
+          console.log("Saved!");
+        }
+      });
+      res.redirect('/');  
+    }
+    else{
       res.render('list', {
         title: 'ToDo List',
         todo: results
@@ -95,6 +90,7 @@ app.get('/', (req, res) => {
   });
 });
 
+//handling post request in root dir
 app.post('/', (req, res) => {
   console.log(req.body);
 
