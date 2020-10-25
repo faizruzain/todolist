@@ -8,12 +8,12 @@
   </div>
 
   <div class="box">
-    <% for (let i = 0; i < todo.length; i++) { %>
-    <div class="item">
-      <input type="checkbox">
-      <p><%= todo[i] %></p>
-    </div>
-    <% } %>
+    <% todo.forEach((result) => { %>
+      <div class="item">
+        <input type="checkbox">
+        <p><%= result.name %></p>
+      </div>
+    <% }); %>
 
     <form class="item" action="/" method="post">
       <!-- <label for="myInput">What to do?</label> -->
@@ -25,5 +25,5 @@
     </form>
 
   </div>
-  
+
 <%- include('footer'); -%>
