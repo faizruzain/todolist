@@ -9,10 +9,12 @@
 
   <div class="box">
     <% todo.forEach((result) => { %>
-      <div class="item">
-        <input type="checkbox">
-        <p><%= result.name %></p>
-      </div>
+      <form name="delForm" action="/delete" method="post">
+        <div class="item">
+          <input type="checkbox" onchange="this.form.submit()" name="myCheckbox" id="myCheck" value="<%=result._id%>">
+          <p><%=result.name%></p>
+        </div>
+      </form>
     <% }); %>
 
     <form class="item" action="/" method="post">
