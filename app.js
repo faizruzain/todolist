@@ -68,38 +68,38 @@ app.use(express.static('public'));
 
 //handling get request in root dir
 app.get('/', (req, res) => {
-  let today = new Date();
-  currentDay = today.getDay();
-  let options = {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }
-  let day = today.toLocaleDateString('id-ID', options);
 
-  //find documents
   Item.find({}, (err, results) => {
-    if (results.length === 0) {
-      //save those data to database
-      Item.insertMany(defaultItems, (err) => {
-        if (err) {
-          console.log(err);
-        } else {
-          console.log("Saved!");
-        }
-      });
-      res.redirect('/');
-    } else {
-      res.render('list', {
-        title: 'ToDo List',
-        todo: results
-      });
-    }
+    res.render('list', {
+      title: 'ToDo List',
+      todo: results
+    });
   });
+
+  // //find documents
+  // Item.find({}, (err, results) => {
+  //   if (results.length === 0) {
+  //     //save those data to database
+  //     Item.insertMany(defaultItems, (err) => {
+  //       if (err) {
+  //         console.log(err);
+  //       } else {
+  //         console.log("Saved!");
+  //       }
+  //     });
+  //     res.redirect('/');
+  //   } else {
+  //     res.render('list', {
+  //       title: 'ToDo List',
+  //       todo: results
+  //     });
+  //   }
+  // });
 });
 
 //handling post request in root dir
 app.post('/', (req, res) => {
+
   console.log(req.body.list);
   if (req.body.list === 'ToDo') {
     const item = new Item({
@@ -114,21 +114,20 @@ app.post('/', (req, res) => {
       }
     });
     res.redirect('/');
-  }
-  else{
+  } else {
     const work = new Work({
       name: req.body.myInput
     });
 
     work.save((err) => {
-      if(err){
+      if (err) {
         console.log(err);
-      }
-      else{
+      } else {
         console.log('Saved!');
+        res.redirect('/work');
       }
     });
-    res.redirect('/work');
+
   }
 });
 
@@ -142,6 +141,21 @@ app.get('/work', (req, res) => {
     });
   });
 });
+
+app.get('/:customListName', function (req, res) {
+  const customListName = req.params.customListName;
+  res.send(customListName);
+});
+
+app.post('/delete', (req, res) => {
+
+  Item.findByIdAndRemove(req.body.myCheckbox, ({useFindAndModify: false}), () => {
+    console.log('Deleted!');
+    res.redirect('/');
+  });
+});
+
+
 
 //listening port
 app.listen(process.env.PORT || port, () => {
