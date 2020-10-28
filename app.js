@@ -4,6 +4,9 @@ const port = 3000;
 
 const bodyParser = require('body-parser');
 
+//use lodash
+var _ = require('lodash');
+
 //the database
 const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/todolistDB', {
@@ -23,6 +26,10 @@ const itemsSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true
+  },
+  list: {
+    type: String,
+    required: true
   }
 
 });
@@ -35,10 +42,23 @@ const worksSchema = new mongoose.Schema({
 
 });
 
+const customListNamesSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  list: {
+    type: String,
+    required: true
+  }
+});
+
 //compile schema to model
 const Item = mongoose.model('Item', itemsSchema);
 
 const Work = mongoose.model('Work', worksSchema);
+
+const customListM = mongoose.model('customList', customListNamesSchema);
 
 //create some data to save in database
 const item1 = new Item({
@@ -72,7 +92,8 @@ app.get('/', (req, res) => {
   Item.find({}, (err, results) => {
     res.render('list', {
       title: 'ToDo List',
-      todo: results
+      todo: results,
+      customListName: customListName
     });
   });
 
@@ -99,59 +120,75 @@ app.get('/', (req, res) => {
 
 //handling post request in root dir
 app.post('/', (req, res) => {
+  const item = new Item({
+    name: 'ToDo',
+    list: req.body.myInput
+  });
 
-  console.log(req.body.list);
-  if (req.body.list === 'ToDo') {
-    const item = new Item({
-      name: req.body.myInput
-    });
-
-    item.save((err) => {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log("Saved!");
-      }
-    });
-    res.redirect('/');
-  } else {
-    const work = new Work({
-      name: req.body.myInput
-    });
-
-    work.save((err) => {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log('Saved!');
-        res.redirect('/work');
-      }
-    });
-
-  }
-});
-
-//handling get request at work dir
-app.get('/work', (req, res) => {
-
-  Work.find({}, (err, results) => {
-    res.render('list', {
-      title: 'Work List',
-      todo: results
-    });
+  item.save((err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Saved!");
+      res.redirect('/');
+    }
   });
 });
 
-app.get('/:customListName', function (req, res) {
-  const customListName = req.params.customListName;
-  res.send(customListName);
+// //handling get request at work dir
+// app.get('/work', (req, res) => {
+//
+//   Work.find({}, (err, results) => {
+//     res.render('list', {
+//       title: '',
+//       todo: results
+//     });
+//   });
+// });
+
+app.get('/:customListName', function(req, res) {
+  customListName = req.params.customListName;
+  customListM.find({
+    name: customListName
+  }, (err, results) => {
+    if (err) {
+      console.log(err);
+    } else {
+      const upF = _.upperFirst(customListName);
+      res.render('list', {
+        title: upF,
+        todo: results,
+        customListName: customListName
+      });
+    }
+  });
 });
 
-app.post('/delete', (req, res) => {
+let customListName = [];
 
-  Item.findByIdAndRemove(req.body.myCheckbox, ({useFindAndModify: false}), () => {
+app.post('/:customListName', (req, res) => {
+  customListName = req.params.customListName;
+  const customList = new customListM({
+    name: customListName,
+    list: req.body.myInput
+  });
+  customList.save((err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(req.body.myInput + " has been saved!");
+      res.redirect(customListName);
+    }
+  });
+});
+
+app.post('/:customListName', (req, res) => {
+  customListName = req.params.customListName;
+  customListM.findByIdAndRemove(req.body.myCheckbox, ({
+    useFindAndModify: false
+  }), () => {
     console.log('Deleted!');
-    res.redirect('/');
+    res.redirect(customListName);
   });
 });
 
