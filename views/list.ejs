@@ -3,21 +3,21 @@
 <body onload="startTime()">
 
   <div class="box" id="heading">
-    <h1> <%= title %> </h1>
+    <h1> <%= title + ' List' %> </h1>
     <h1 id="txt"></h1>
   </div>
 
   <div class="box">
     <% todo.forEach((result) => { %>
-      <form name="delForm" action="/delete" method="post">
+      <form name="delForm" action="<%=customListName%>" method="post">
         <div class="item">
           <input type="checkbox" onchange="this.form.submit()" name="myCheckbox" id="myCheck" value="<%=result._id%>">
-          <p><%=result.name%></p>
+          <p><%=result.list%></p>
         </div>
       </form>
     <% }); %>
 
-    <form class="item" action="/" method="post">
+    <form class="item" action="<%=customListName%>" method="post">
       <!-- <label for="myInput">What to do?</label> -->
       <br>
       <input type="text" name="myInput" placeholder="New Items" autocomplete="off">
