@@ -27,10 +27,7 @@ const itemsSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  list: {
-    type: String,
-    required: true
-  }
+  list: String
 
 });
 
@@ -38,7 +35,8 @@ const worksSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true
-  }
+  },
+  list: String
 
 });
 
@@ -47,10 +45,7 @@ const customListNamesSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  list: {
-    type: String,
-    required: true
-  }
+  list: String
 });
 
 //compile schema to model
@@ -60,28 +55,11 @@ const Work = mongoose.model('Work', worksSchema);
 
 const customListM = mongoose.model('customList', customListNamesSchema);
 
-//create some data to save in database
-const item1 = new Item({
-  name: "Welcome to your todolist!"
-});
-
-const item2 = new Item({
-  name: "Hit the + button to add a new List"
-});
-
-const item3 = new Item({
-  name: "<-- Hit this to delete a List"
-});
-
-const defaultItems = [item1, item2, item3];
-
 //tell our app to use EJS
 app.set('view engine', 'ejs');
 
 //tell our app to use body-parser
-app.use(bodyParser.urlencoded({
-  extended: true
-}));
+app.use(bodyParser.urlencoded({extended: true}));
 
 //tell express serever to use static file called "public" or whatever
 app.use(express.static('public'));
@@ -91,107 +69,111 @@ app.get('/', (req, res) => {
 
   Item.find({}, (err, results) => {
     res.render('list', {
-      title: 'ToDo List',
-      todo: results,
-      customListName: customListName
+      title: 'ToDo',
+      todo: results
     });
   });
 
-  // //find documents
-  // Item.find({}, (err, results) => {
-  //   if (results.length === 0) {
-  //     //save those data to database
-  //     Item.insertMany(defaultItems, (err) => {
-  //       if (err) {
-  //         console.log(err);
-  //       } else {
-  //         console.log("Saved!");
-  //       }
-  //     });
-  //     res.redirect('/');
-  //   } else {
-  //     res.render('list', {
-  //       title: 'ToDo List',
-  //       todo: results
-  //     });
-  //   }
-  // });
 });
 
 //handling post request in root dir
 app.post('/', (req, res) => {
-  const item = new Item({
-    name: 'ToDo',
-    list: req.body.myInput
-  });
 
-  item.save((err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log("Saved!");
-      res.redirect('/');
-    }
-  });
+  if (req.body.list === 'ToDo') {
+    const item = new Item({
+      name: 'ToDo',
+      list: req.body.myInput
+    });
+
+    item.save((err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(req.body.myInput + " has been saved!");
+        res.redirect('/');
+      }
+    });
+  } else if (req.body.list === 'Work') {
+    const work = new Work({
+      name: 'Work',
+      list: req.body.myInput
+    });
+
+    work.save((err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(req.body.myInput + " has been saved!");
+        res.redirect('/work');
+      }
+    });
+  }
+  else {
+    lowF = _.lowerFirst(req.body.list);
+    const customList = new customListM({
+      name: lowF,
+      list: req.body.myInput
+    });
+
+    customList.save((err) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(req.body.myInput + " has been saved!");
+        res.redirect('/'+lowF);
+      }
+    });
+  }
+
 });
 
-// //handling get request at work dir
-// app.get('/work', (req, res) => {
-//
-//   Work.find({}, (err, results) => {
-//     res.render('list', {
-//       title: '',
-//       todo: results
-//     });
-//   });
-// });
+app.get('/work', (req, res) => {
+
+  Work.find({}, (err, results) => {
+    res.render('list', {
+      title: 'Work',
+      todo: results
+    });
+  });
+
+});
 
 app.get('/:customListName', function(req, res) {
-  customListName = req.params.customListName;
-  customListM.find({
-    name: customListName
-  }, (err, results) => {
+
+  const customListName = req.params.customListName;
+  customListM.find({name: customListName}, (err, results) => {
     if (err) {
       console.log(err);
     } else {
       const upF = _.upperFirst(customListName);
       res.render('list', {
         title: upF,
-        todo: results,
-        customListName: customListName
+        todo: results
       });
     }
   });
+
 });
 
-let customListName = [];
+app.post('/delete', (req, res) => {
 
-app.post('/:customListName', (req, res) => {
-  customListName = req.params.customListName;
-  const customList = new customListM({
-    name: customListName,
-    list: req.body.myInput
-  });
-  customList.save((err) => {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(req.body.myInput + " has been saved!");
-      res.redirect(customListName);
-    }
-  });
+  if(req.body.customList === 'ToDo') {Item.findByIdAndRemove(req.body.myCheckbox, ({useFindAndModify: false}), () => {
+      res.redirect('/');
+    });
+  }
+  else if (req.body.customList === 'Work') {
+    Work.findByIdAndRemove(req.body.myCheckbox, ({useFindAndModify: false}), () => {
+      res.redirect('/work');
+    });
+  }
+  else{
+    customListM.findByIdAndRemove(req.body.myCheckbox, ({useFindAndModify: false}), () => {
+      lowF = _.lowerFirst(req.body.customList);
+      res.redirect('/'+lowF);
+    });
+  }
+
 });
-
-app.post('/:customListName', (req, res) => {
-  customListName = req.params.customListName;
-  customListM.findByIdAndRemove(req.body.myCheckbox, ({
-    useFindAndModify: false
-  }), () => {
-    console.log('Deleted!');
-    res.redirect(customListName);
-  });
-});
-
 
 
 //listening port
