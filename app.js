@@ -1,6 +1,6 @@
 // mongoAtlas = {
 //   username: faiz
-//   password: TZcPaRJ2ihvOCIKo
+//   password: 
 // }
 
 const express = require('express');
