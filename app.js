@@ -1,3 +1,8 @@
+// mongoAtlas = {
+//   username: faiz
+//   password: TZcPaRJ2ihvOCIKo
+// }
+
 const express = require('express');
 const app = express();
 const port = 3000;
@@ -9,7 +14,7 @@ var _ = require('lodash');
 
 //the database
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/todolistDB', {
+mongoose.connect('mongodb+srv://faiz:TZcPaRJ2ihvOCIKo@cluster0.uvp4c.mongodb.net/todolistDB?retryWrites=true&w=majority', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 });
@@ -84,7 +89,7 @@ app.post('/', (req, res) => {
       name: 'ToDo',
       list: req.body.myInput
     });
-
+a
     item.save((err) => {
       if (err) {
         console.log(err);
